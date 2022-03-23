@@ -291,5 +291,126 @@ namespace Infraestructure.Repository
             }
            
         }
+
+        public int Update<T>(T t)
+        {
+            int id;
+            try
+            {
+
+                id = (int)t.GetType().GetProperty("Id").GetValue(t);
+                int index = BinarySearch(id);
+                if (index < 0)
+                {
+                    throw new ArgumentException($"No se encontro un objeto con el Id: {id}");
+                }
+                using (BinaryWriter bwData = new BinaryWriter(DataStream))
+                {
+                    long posd = index * size;
+                    bwData.BaseStream.Seek(posd, SeekOrigin.Begin);
+
+                    PropertyInfo[] info = t.GetType().GetProperties();
+                    foreach (PropertyInfo pinfo in info)
+                    {
+                        Type type = pinfo.PropertyType;
+                        object obj = pinfo.GetValue(t, null);
+
+                        if (type.IsGenericType)
+                        {
+                            continue;
+                        }
+                        if (type == typeof(int))
+                        {
+                            bwData.Write((int)obj);
+                        }
+                        else if (type == typeof(long))
+                        {
+                            bwData.Write((long)obj);
+                        }
+                        else if (type == typeof(float))
+                        {
+                            bwData.Write((float)obj);
+                        }
+                        else if (type == typeof(double))
+                        {
+                            bwData.Write((double)obj);
+                        }
+                        else if (type == typeof(decimal))
+                        {
+                            bwData.Write((decimal)obj);
+                        }
+                        else if (type == typeof(char))
+                        {
+                            bwData.Write((char)obj);
+                        }
+                        else if (type == typeof(bool))
+                        {
+                            bwData.Write((bool)obj);
+                        }
+                        else if (type == typeof(string))
+                        {
+                            bwData.Write((string)obj);
+                        }
+                    }
+                }
+                return id;
+            }
+            catch (Exception)
+            {
+                throw new ArgumentException($"El objeto {t.GetType().Name} no contiene la propiedad Id");
+            }
+        }
+
+        public void Delete<T>(T t)
+        {
+            try
+            {
+                int Id = (int)t.GetType().GetProperty("Id").GetValue(t);
+                int n = 0;
+                int pos = 8 + (Id - 1) * 4;
+                using (BinaryWriter brHeader = new BinaryWriter(HeaderStream))
+                {
+                    if (brHeader.BaseStream.Length > 0)
+                    {
+                        brHeader.BaseStream.Seek(pos, SeekOrigin.Begin);
+                        brHeader.Write(0);
+                    }
+
+                }
+            }
+            catch (IOException)
+            {
+                throw;
+            }
+
+        }
+        private int BinarySearch(int Buscardato)
+        {
+            using (BinaryReader brHeader = new BinaryReader(HeaderStream))
+            {
+                brHeader.BaseStream.Seek(0, SeekOrigin.Begin);
+                int fin = brHeader.ReadInt32() - 1;
+                int inicio = 0;
+                while (inicio <= fin)
+                {
+                    int indiceCentral = Convert.ToInt32(Math.Floor(Convert.ToDouble(inicio + fin) / 2));
+                    brHeader.BaseStream.Seek(8 + 4 * indiceCentral, SeekOrigin.Begin);
+                    int valorCentral = brHeader.ReadInt32();
+                    if (valorCentral == Buscardato)
+                    {
+                        return indiceCentral;
+                    }
+                    if (Buscardato < valorCentral)
+                    {
+                        fin = indiceCentral - 1;
+                    }
+                    else
+                    {
+                        inicio = indiceCentral + 1;
+                    }
+                }
+                return -1;
+            }
+        }
     }
 }

@@ -22,7 +22,7 @@ namespace practicaDepreciacion
             this.activo = Activo;
             InitializeComponent();
             comboBox1.Items.AddRange(Enum.GetValues(typeof(Depreciacion)).Cast<object>().ToArray());
-           
+
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -31,7 +31,7 @@ namespace practicaDepreciacion
             double total = 0;
             IDepreciacionModel depreciacion = FactoryDeducciones.FactoryDepreciacion((Depreciacion)comboBox1.SelectedIndex);
             List<double> depreciaciones = depreciacion.Depreciacion(activo);
-            for(int i=0; i<depreciaciones.Count;i++)
+            for (int i = 0; i < depreciaciones.Count; i++)
             {
                 richTextBox1.Text += $"Depreciacion: {i + 1}: {depreciaciones[i]}\n";
                 total += depreciaciones[i];

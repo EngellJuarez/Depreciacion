@@ -2,6 +2,7 @@
 using Domain.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,7 +31,14 @@ namespace Infraestructure.Repository
 
         public void Delete(Activo t)
         {
-            throw new NotImplementedException();
+            try
+            {
+                context.Delete<Activo>(t);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public Activo GetById(int id)
@@ -55,6 +63,23 @@ namespace Infraestructure.Repository
             {
                 throw;
             }
+        }
+
+        public int Update(Activo t)
+        {
+            try
+            {
+                return context.Update<Activo>(t);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public List<Activo> Find()
+        {
+            throw new NotImplementedException();
         }
     }
 }
